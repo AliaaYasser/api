@@ -1,0 +1,33 @@
+﻿
+@{
+    ViewBag.Title = "sum";
+}
+
+<h2>sum</h2>
+
+
+@using (Html.BeginForm("sum", "Home",  FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary()
+
+    <div class="form-group">
+       <p>row number</p> <input type="number" name="row1" value="row1" />
+        
+    </div>
+    <div class="form-group">
+      <p>row number</p>  <input type="number"  name="row2" value="row2"/>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="get sum" class="btn btn-default" />
+    </div>
+   
+    <p>
+        ppm=  @ViewBag.ppm
+
+        <br />
+        met= @ViewBag.met
+    </p>
+    
+
+}

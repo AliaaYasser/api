@@ -1,0 +1,57 @@
+﻿@model IEnumerable<WebApplication6.Models.product>
+
+@{
+    ViewBag.Title = "read_n";
+}
+
+<h2>read_n</h2>
+
+@using (Html.BeginForm("read_n", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary()
+
+    <div class="form-group">
+        <p>number of rows</p> <input type="number" name="nrow" value="nrow" />
+
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Read" class="btn btn-default" />
+    </div>
+
+    if (Model != null)
+    {
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ppm)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.met)
+                </th>
+                <th></th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ppm)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.met)
+                    </td>
+
+                </tr>
+            }
+
+        </table>
+    }
+}

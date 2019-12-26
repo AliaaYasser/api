@@ -1,0 +1,25 @@
+﻿
+@{
+    ViewBag.Title = "Download";
+}
+
+<h2>Download</h2>
+
+//I use blockUI for loading...
+$.blockUI({ message: '<h3>Please wait a moment...</h3>' });
+$.ajax({
+    type: "POST",
+    url: '@Url.Action("ExportExcel", "YourController")', //call your controller and action
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    }).done(function (data) {
+    //console.log(data.result);
+    $.unblockUI();
+
+    //get the file name for download
+    if (data.fileName != "") {
+    //use window.location.href for redirect to download action for download the file
+    window.location.href = "@Url.RouteUrl(new
+{ Controller = "Home", Action = "Download"})/?file=" + data.fileName;
+    }
+    });

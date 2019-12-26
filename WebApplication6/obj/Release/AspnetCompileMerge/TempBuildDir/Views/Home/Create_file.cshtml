@@ -1,0 +1,19 @@
+﻿
+@model System.Data.DataTable
+@using System.Data;
+@{
+    ViewBag.Title = "Create_file";
+}
+
+<h2>Create_file</h2>
+
+<p>@ViewBag.msg</p>
+
+
+<p> do you want to get sum ? @Html.ActionLink("get sum ", "sum")</p>
+<p>
+    do you want to read only n number of file rows? and display all details?
+    @Html.ActionLink("read ?", "read_n")
+</p>
+<p> set all yes to 1 and all no to 0  @Html.ActionLink("setYEStoTrue", "setYEStoTrue")</p>
+ 

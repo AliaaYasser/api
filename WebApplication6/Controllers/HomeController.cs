@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Mvc;
 using ExcelDataReader;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using WebApplication6.Models;
 
 namespace WebApplication6.Controllers
 {
@@ -62,7 +63,7 @@ namespace WebApplication6.Controllers
 
                     DataSet result = reader.AsDataSet();
                     reader.Close();
-                    
+
 
                     return View(result.Tables[0]);
                 }
@@ -76,9 +77,15 @@ namespace WebApplication6.Controllers
 
 
 
-
-        public List<IRow> GetExcellSheetRows(string filePath, long parsedFileId, bool skipFirstRow = true)
+        public ActionResult GetExcellSheetRows()
         {
+            return View();
+        }
+
+        [HttpPost]
+        public List<IRow> GetExcellSheetRows(bool skipFirstRow = true)
+        {
+            string filePath = "C://Users//Aliaa Yasser//Downloads//DSS Midterm Grades_ToStudents";
             List<IRow> ExcellSheetRowList = new List<IRow>();
             try
             {
@@ -148,55 +155,171 @@ namespace WebApplication6.Controllers
             }
             catch (Exception ex)
             {
-                #region Log Exception
-                Log(LogEnum.LogWriteType.Both, LogEnum.LogMethodType.Method, MethodBase.GetCurrentMethod().Name, ex, LogEnum.View.Web);
-                #endregion
+
             }
             return ExcellSheetRowList;
+
+        }
+       public ActionResult Createfile()
+        {
+            return RedirectToAction("Create_file");
+        }
+        public ActionResult Create_file(HttpPostedFileBase upload)
+        {
+            IWorkbook workbook = new XSSFWorkbook();
+            ISheet sheet1 = workbook.CreateSheet("Sheet1");
+            sheet1.CreateRow(0).CreateCell(0).SetCellValue("This is a Sample");
+            int x = 1;
+            for (int i = 1; i <= 15; i++)
+            {
+                IRow row = sheet1.CreateRow(i);
+                for (int j = 0; j < 3; j++)
+                {
+                    if (j == 0)
+                    {
+                        row.CreateCell(j).SetCellValue("aliaa"+""+ i);
+                    }
+                    else if (j == 1)
+                    {
+                        row.CreateCell(j).SetCellValue(i);
+                    }
+                    else
+                    {
+                        row.CreateCell(j).SetCellValue(i + 87);
+                    }
+
+
+                }
+            }
+
+            ISheet sheet2 = workbook.CreateSheet("Sheet2");
+            sheet2.CreateRow(0).CreateCell(0).SetCellValue("secound");
+            int n = 1;
+            for (int i = 1; i <= 15; i++)
+            {
+                IRow row = sheet2.CreateRow(i);
+                for (int j = 0; j < 3; j++)
+                {
+                    if (j == 0)
+                    {
+                        row.CreateCell(j).SetCellValue("aliaa" + " " + i);
+                    }
+                    else if (j == 1)
+                    {
+                        row.CreateCell(j).SetCellValue(i);
+                    }
+                    else
+                    {
+                        row.CreateCell(j).SetCellValue("Yes");
+                    }
+
+
+                }
+            }
+
+
+            FileStream sw = System.IO.File.Create(HostingEnvironment.MapPath("~/Content/aliaa.xlsx"));
+            workbook.Write(sw);
+            sw.Close();
+            ViewBag.msg = "succusse";
+            return View();
         }
 
-
-        public bool GenerateExcelSheetWithoutDownload(DataTable dataTable, string exportingSheetPath, out string exportingFileName)
+        public ActionResult sum()
         {
-            #region Validate the parameters and Generate the excel sheet
-            bool returnValue = false;
-            exportingFileName = Guid.NewGuid().ToString() + ".xlsx";
+            return View();
+        }
 
-            try
+        [HttpPost]
+        public ActionResult sum(int row1, int row2)
+        {
+            XSSFWorkbook book = new XSSFWorkbook(new FileStream(HostingEnvironment.MapPath("~/Content/aliaa.xlsx"), FileMode.Open));
+            XSSFSheet sheet1 = book.GetSheetAt(0) as XSSFSheet;
+            double y1 = sheet1.GetRow(row1).GetCell(1).NumericCellValue;
+            double y2 = sheet1.GetRow(row2).GetCell(1).NumericCellValue;
+            double ppm_sum = y1 + y2;
+            double y3 = sheet1.GetRow(row1).GetCell(2).NumericCellValue;
+            double y4 = sheet1.GetRow(row2).GetCell(2).NumericCellValue;
+            double met = y3 + y4;
+
+
+            ViewBag.ppm = ppm_sum;
+            ViewBag.met = met;
+            return View();
+
+        }
+
+        [HttpPost]
+        public ActionResult read_n(int nrow)
+        {
+            List<product> products = new List<product>();
+
+            XSSFWorkbook book = new XSSFWorkbook(new FileStream(HostingEnvironment.MapPath("~/Content/aliaa.xlsx"), FileMode.Open));
+            XSSFSheet sheet1 = book.GetSheetAt(1) as XSSFSheet;
+
+            for (int i = 1; i <= nrow; i++)
             {
-                string excelSheetPath = string.Empty;
-                #region Check If The directory is exist
-                if (!Directory.Exists(exportingSheetPath))
-                {
-                    Directory.CreateDirectory(exportingSheetPath);
-                }
+                product product1 = new product();
+                product1.description = sheet1.GetRow(i).GetCell(0).StringCellValue;
+                product1.ppm = sheet1.GetRow(i).GetCell(1).NumericCellValue;
+                product1.met = sheet1.GetRow(i).GetCell(2).StringCellValue;
+                products.Add(product1);
 
-                excelSheetPath = exportingSheetPath + exportingFileName;
-                FileInfo fileInfo = new FileInfo(excelSheetPath);
-                #endregion
 
-                #region Write stream to the file
-                MemoryStream ms = DataToExcel(dataTable);
-                byte[] blob = ms.ToArray();
-                if (blob != null)
-                {
-                    using (MemoryStream inStream = new MemoryStream(blob))
-                    {
-                        FileStream fs = new FileStream(excelSheetPath, FileMode.Create);
-                        inStream.WriteTo(fs);
-                        fs.Close();
-                    }
-                }
-                ms.Close();
-                returnValue = true;
-                #endregion
             }
-            catch (Exception ex)
+            
+            return View(products);
+        }
+        public ActionResult read_n()
+        {
+
+            return View();
+        }
+        [HttpGet]
+        public ActionResult setYEStoTrue()
+        {
+
+
+            XSSFWorkbook book1 = new XSSFWorkbook(new FileStream(HostingEnvironment.MapPath("~/Content/aliaa.xlsx"), FileMode.Open));
+
+       
+            XSSFSheet sheet1 = book1.GetSheet("sheet2") as XSSFSheet;
+          
+          
+            int x = 1;
+            for (int i = 1; i <= sheet1.LastRowNum; i++)
             {
 
+
+                if (sheet1.GetRow(i).GetCell(2).ToString() == "Yes")
+                    sheet1.GetRow(i).CreateCell(2).SetCellValue(1);
+
+
+                else {
+                    sheet1.GetRow(i).CreateCell(2).SetCellValue(0);
+
+                }
             }
-            return returnValue;
-            #endregion
+            string filepath = HostingEnvironment.MapPath("~/Content/aliaa.xlsx");
+             FileStream sw = System.IO.File.Create(filepath);
+            book1.Write(sw);
+            sw.Close();
+            ViewBag.msg = "scucess";
+            ViewBag.path = filepath;
+            return View();
+        }
+
+        [HttpGet]
+        
+        public ActionResult Download(string file)
+        {
+         //   string file = "C:\\Users\\Aliaa Yasser\\Desktop\\aliaa1.xlsx";
+            //get the temp folder and file path in server
+            string fullPath = Path.Combine(Server.MapPath("~/temp"), file);
+
+            //return the file for download, this is an Excel 
+            //so I set the file content type to "application/vnd.ms-excel"
+            return File(fullPath, "application/vnd.ms-excel", file);
         }
     }
 }
